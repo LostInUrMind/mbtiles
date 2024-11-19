@@ -13,14 +13,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/tiles")
 public class TileController {
 
-    @GetMapping("/{zoom}/{x}/{y}.pbf")
-    public ResponseEntity<byte[]> getTile(@PathVariable int zoom, @PathVariable int x, @PathVariable int y) {
+    @GetMapping("/{zoom}/{col}/{row}")
+    public ResponseEntity<byte[]> getTile(@PathVariable int zoom, @PathVariable int col, @PathVariable int row) {
         try {
-            String mbtilesFile = "C:/Users/NhatNM2/Downloads/output.mbtiles"; // Đường dẫn tới file .mbtiles
-            Tile tileData = TilesReader.getTiles(mbtilesFile, zoom, x, y);
+            String mbtilesFile = "C:/Users/NhatNM2/Downloads/tiles/mbtiles-bfe/mbtiles-backend/src/main/java/com/example/mbtiles_backend/mapbox/transformed_geojson_file.mbtiles"; // Đường dẫn tới file .mbtiles
+            Tile tileData = TilesReader.getTiles(mbtilesFile, zoom, col, row);
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
-            headers.setContentType(MediaType.valueOf("application/pbf"));
+            headers.setContentType(MediaType.valueOf("application/x-protobuf"));
             if(tileData.getData() != null) {
                 return ResponseEntity.ok()
                         .headers(headers)

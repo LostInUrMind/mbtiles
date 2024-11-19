@@ -57,14 +57,17 @@ public class TilesReader {
         }
     }
 
-    public static Tile getTiles(String mbtilesFile, int zoom, int x, int y) throws RuntimeException {
-        File file = Paths.get(mbtilesFile).toFile();
+    public static int flipY(int z, int y) {
+        return (int) (Math.pow(2, z) - 1 - y);
+    }
 
+    public static Tile getTiles(String mbtilesFile, int zoom, int col, int row) throws RuntimeException {
+        File file = Paths.get(mbtilesFile).toFile();
+        row = flipY(zoom, row);
         try {
             MBTilesReader reader = new MBTilesReader(file);
-            Tile tile = reader.getTile(zoom, y, x);
-            logger.info(tile.toString());
-            logger.info("Get tile success");
+            Tile tile = reader.getTile(zoom, col, row);
+            logger.info("Fetched tile: z:" + tile.getZoom() + " x:" + tile.getColumn() + " y:" + tile.getRow());
             return tile;
         } catch(MBTilesReadException e) {
             throw new RuntimeException(e);
