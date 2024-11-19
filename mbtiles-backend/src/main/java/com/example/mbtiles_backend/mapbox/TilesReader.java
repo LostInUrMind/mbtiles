@@ -1,11 +1,11 @@
 package com.example.mbtiles_backend.mapbox;
 
 import org.imintel.mbtiles4j.MBTilesReadException;
+import org.imintel.mbtiles4j.MBTilesReader;
 import org.imintel.mbtiles4j.Tile;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -14,8 +14,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Logger;
 
-public class MBTilesReader {
-    static Logger logger = Logger.getLogger(MBTilesReader.class.getName());
+public class TilesReader {
+    static Logger logger = Logger.getLogger(TilesReader.class.getName());
+
     public static JSONObject getTileData(String mbtilesFile, int zoom, int x, int y) throws SQLException {
         Connection connection = null;
         PreparedStatement stmt = null;
@@ -35,7 +36,7 @@ public class MBTilesReader {
 
             rs = stmt.executeQuery();
 
-            if (rs.next()) {
+            if(rs.next()) {
                 byte[] tileData = rs.getBytes("tile_data");
 
                 // Tạo JSON trả về
@@ -46,30 +47,26 @@ public class MBTilesReader {
                 logger.info("No data");
                 return null; // Không tìm thấy tile
             }
-        } catch (SQLException e) {
+        } catch(SQLException e) {
             e.printStackTrace();
             throw e;
         } finally {
-            if (rs != null) rs.close();
-            if (stmt != null) stmt.close();
-            if (connection != null) connection.close();
+            if(rs != null) rs.close();
+            if(stmt != null) stmt.close();
+            if(connection != null) connection.close();
         }
     }
 
-    public static TileRes getTiles(String mbtilesFile, int zoom, int x, int y) throws RuntimeException {
+    public static Tile getTiles(String mbtilesFile, int zoom, int x, int y) throws RuntimeException {
         File file = Paths.get(mbtilesFile).toFile();
 
         try {
-            org.imintel.mbtiles4j.MBTilesReader reader = new org.imintel.mbtiles4j.MBTilesReader(file);
-
+            MBTilesReader reader = new MBTilesReader(file);
             Tile tile = reader.getTile(zoom, y, x);
-            return TileRes.builder()
-                    .zoom(tile.getZoom())
-                    .column(tile.getColumn())
-                    .row(tile.getRow())
-                    .data(tile.getData().readAllBytes())
-                    .build();
-        } catch(MBTilesReadException | IOException e) {
+            logger.info(tile.toString());
+            logger.info("Get tile success");
+            return tile;
+        } catch(MBTilesReadException e) {
             throw new RuntimeException(e);
         }
 

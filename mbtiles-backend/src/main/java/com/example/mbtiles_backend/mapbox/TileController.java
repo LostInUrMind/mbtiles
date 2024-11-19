@@ -1,5 +1,8 @@
 package com.example.mbtiles_backend.mapbox;
 
+import org.imintel.mbtiles4j.Tile;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,26 +13,23 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/tiles")
 public class TileController {
 
-    @GetMapping("/{zoom}/{x}/{y}")
+    @GetMapping("/{zoom}/{x}/{y}.pbf")
     public ResponseEntity<byte[]> getTile(@PathVariable int zoom, @PathVariable int x, @PathVariable int y) {
         try {
-            String mbtilesFile = "C:/Users/NhatNM2/Downloads/tiles/mbtiles-backend/src/main/java/com/example/mbtiles_backend/mapbox/104281_matched_polygon_new.mbtiles"; // Đường dẫn tới file .mbtiles
-//            JSONObject tileData = MBTilesReader.getTileData(mbtilesFile, zoom, x, y);
-            TileRes tileData = MBTilesReader.getTiles(mbtilesFile, zoom, x, y);
-            if(tileData != null) {
-                return ResponseEntity.ok().body(tileData.data);
+            String mbtilesFile = "C:/Users/NhatNM2/Downloads/output.mbtiles"; // Đường dẫn tới file .mbtiles
+            Tile tileData = TilesReader.getTiles(mbtilesFile, zoom, x, y);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
+            headers.setContentType(MediaType.valueOf("application/pbf"));
+            if(tileData.getData() != null) {
+                return ResponseEntity.ok()
+                        .headers(headers)
+                        .body(tileData.getData().readAllBytes());
             } else {
-                return null;
+                return ResponseEntity.notFound().build();
             }
-//            if (tileData != null) {
-//                return tileData;
-//            } else {
-//                return new JSONObject().put("error", "Tile not found");
-//            }
         } catch (Exception e) {
             throw new RuntimeException(e);
-//            e.printStackTrace();
-//            return new JSONObject().put("error", "Failed to fetch tile data");
         }
     }
 }
